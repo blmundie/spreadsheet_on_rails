@@ -1,8 +1,12 @@
 module SpreadsheetOnRails
 
-  def self.render_xls_string(spreadsheet)
+  def self.render_xls_string(spreadsheet, template = nil)
 <<RENDER
-    workbook = Spreadsheet::Workbook.new
+    if template.nil?
+      workbook = Spreadsheet::Workbook.new
+    else
+      book = Spreadsheet.open("Rails.root/spreadsheet_templates/#{spreadsheet_template}")
+    end
     #{spreadsheet}
     blob = StringIO.new("")
     workbook.write(blob)
@@ -16,13 +20,13 @@ end
 require "action_view/template"
 require 'spreadsheet'
 ActionView::Template.register_template_handler :rxls, lambda { |template|
-  SpreadsheetOnRails.render_xls_string(template.source)
+  SpreadsheetOnRails.render_xls_string(template.source, spreadsheet_template)
 }
 
 # Why doesn't the aboce template handler catch this one as well?
 # Added for backwards compatibility.
 ActionView::Template.register_template_handler :"xls.rxls", lambda { |template|
-  SpreadsheetOnRails.render_xls_string(template.source)
+  SpreadsheetOnRails.render_xls_string(template.source, spreadsheet_template)
 }
 
 # Adds support for `format.xls`
